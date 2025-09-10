@@ -1,0 +1,10 @@
+[project]
+name = "2048-promocode-notificator"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiogram>=3.22.0",
+    "convex>=0.7.0",
+]

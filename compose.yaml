@@ -1,0 +1,10 @@
+services:
+    promocode-notificator:
+        build: .
+        image: promocode-notificator:latest
+        environment:
+            - BOT_TOKEN=${BOT_TOKEN}
+            - CONVEX_URL=${CONVEX_URL}
+            - WEB_APP_URL=${WEB_APP_URL}
+            - NOTIFICATION_DELAY_IN_SECONDS=${NOTIFICATION_DELAY_IN_SECONDS}
+        restart: unless-stopped
