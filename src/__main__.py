@@ -27,8 +27,8 @@ async def schedule_promocode_notification(
     promocode = promocode_with_user.get("promocode", {})
     promocode_type = promocode_with_user.get("promocodeType", {})
     user = promocode_with_user.get("user", {})
-    min_order = promocode_type.get("minOrder")
-    discount = promocode_type.get("discount")
+    min_order = int(promocode_type.get("minOrder"))
+    discount = int(promocode_type.get("discount"))
     code = promocode.get("code")
     opened = promocode.get("opened")
 
@@ -77,7 +77,7 @@ async def schedule_promocode_notification(
 
         await bot.send_message(
             chat_id=chat_id,
-            text="Вам доступен новый промокод на <b>{discount} ₽</b> от {min_order} ₽ 🥳",
+            text=f"Вам доступен новый промокод на <b>{discount} ₽</b> от {min_order} ₽ 🥳",
             reply_markup=keyboard,
         )
 
