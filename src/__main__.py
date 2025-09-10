@@ -4,6 +4,7 @@ from aiogram import Bot
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from convex import ConvexClient
+from loguru import logger
 
 
 BOT_TOKEN = os.getenv("BOT_TOKEN")
@@ -20,24 +21,27 @@ async def schedule_promocode_notification(
     await asyncio.sleep(NOTIFICATION_DELAY_IN_SECONDS)
 
     promocode_with_user = convex_client.query(
-        "promocodes:getPromocodeWithUser",
+        "promocodes:getPromocodeWithUserAndType",
         {"promocodeId": promocode_id},
     )
     promocode = promocode_with_user.get("promocode", {})
+    promocode_type = promocode_with_user.get("promocodeType", {})
     user = promocode_with_user.get("user", {})
-
+    min_order = int(promocode_type.get("minOrder"))
+    discount = int(promocode_type.get("discount"))
     code = promocode.get("code")
     opened = promocode.get("opened")
+
     telegram_id = user.get("telegramId")
 
     if not code or telegram_id is None:
-        print(f"Invalid code or telegram_id: {code} {telegram_id}")
+        logger.error(f"Invalid code or telegram_id: {code} {telegram_id}")
         return
 
     try:
         chat_id = int(telegram_id)
     except (TypeError, ValueError):
-        print(f"Invalid telegram_id: {telegram_id}")
+        logger.error(f"Invalid telegram_id: {telegram_id}")
         return
 
     if opened:
@@ -54,7 +58,7 @@ async def schedule_promocode_notification(
 
         await bot.send_message(
             chat_id=chat_id,
-            text=f"Не забудь применить ваш промокод: <code>{code}</code>",
+            text=f"Не забудьте применить ваш промокод <code>{code}</code> на <b>{discount} ₽</b> от {min_order} ₽",
             reply_markup=keyboard,
         )
     else:
@@ -73,11 +77,11 @@ async def schedule_promocode_notification(
 
         await bot.send_message(
             chat_id=chat_id,
-            text="Вам доступен новый промокод 🥳",
+            text=f"Вам доступен новый промокод на <b>{discount} ₽</b> от {min_order} ₽ 🥳",
             reply_markup=keyboard,
         )
 
-    print(f"Sent notification for promocode {promocode_id} to user {chat_id}")
+    logger.info(f"Sent notification for promocode {promocode_id} to user {chat_id}")
 
 
 async def main():
@@ -99,11 +103,14 @@ async def main():
 
             asyncio.create_task(
                 schedule_promocode_notification(
-                    convex_client=client, bot=bot, promocode_id=promocode_id
+                    convex_client=client,
+                    bot=bot,
+                    promocode_id=promocode_id,
                 )
             )
-            print(f"Scheduled notification for promocode {promocode_id}")
+            logger.info(f"Scheduled notification for promocode {promocode_id}")
 
 
 if __name__ == "__main__":
+    logger.info("Starting promocode notificator")
     asyncio.run(main())
