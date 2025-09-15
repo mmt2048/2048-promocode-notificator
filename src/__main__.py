@@ -1,6 +1,7 @@
 import asyncio
 import os
 from aiogram import Bot
+from aiogram.utils.markdown import hlink
 from aiogram.client.default import DefaultBotProperties
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
 from convex import ConvexClient
@@ -31,6 +32,11 @@ async def schedule_promocode_notification(
     discount = int(promocode_type.get("discount"))
     code = promocode.get("code")
     opened = promocode.get("opened")
+    label = promocode.get("label")
+    url = promocode.get("url")
+    label_text = (
+        f"({hlink(label, url)})" if label and url else (f"({label})" if label else "")
+    )
 
     telegram_id = user.get("telegramId")
 
@@ -58,7 +64,7 @@ async def schedule_promocode_notification(
 
         await bot.send_message(
             chat_id=chat_id,
-            text=f"Не забудьте применить ваш промокод <code>{code}</code> на <b>{discount} ₽</b> от {min_order} ₽",
+            text=f"Не забудьте применить ваш промокод <code>{code}</code> на <b>{discount} ₽</b> от {min_order} ₽ {label_text}",
             reply_markup=keyboard,
         )
     else:
@@ -77,7 +83,7 @@ async def schedule_promocode_notification(
 
         await bot.send_message(
             chat_id=chat_id,
-            text=f"Вам доступен новый промокод на <b>{discount} ₽</b> от {min_order} ₽ 🥳",
+            text=f"Вам доступен новый промокод <b>-{discount} ₽</b> от {min_order} ₽ {label_text}🥳",
             reply_markup=keyboard,
         )
 
