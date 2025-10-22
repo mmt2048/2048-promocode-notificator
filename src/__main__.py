@@ -30,10 +30,10 @@ async def schedule_promocode_notification(
     user = promocode_with_user.get("user", {})
     min_order = int(promocode_type.get("minOrder"))
     discount = int(promocode_type.get("discount"))
+    url = promocode_type.get("url")
+    label = promocode_type.get("label")
     code = promocode.get("code")
     opened = promocode.get("opened")
-    label = promocode.get("label")
-    url = promocode.get("url")
     label_text = (
         f"({hlink(label, url)})" if label and url else (f"({label})" if label else "")
     )
